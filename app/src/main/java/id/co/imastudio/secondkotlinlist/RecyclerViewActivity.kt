@@ -3,7 +3,14 @@ package id.co.imastudio.secondkotlinlist
 import android.os.Bundle
 import android.support.v7.app.AppCompatActivity
 import android.support.v7.widget.LinearLayoutManager
+import android.util.Log
+import id.co.imastudio.secondkotlinlist.network.RetrofitConfig
+import id.co.imastudio.secondkotlinlist.response.ResponseWisata
 import kotlinx.android.synthetic.main.activity_recycler_view.*
+import retrofit2.Call
+import retrofit2.Callback
+import retrofit2.Response
+
 
 class RecyclerViewActivity : AppCompatActivity() {
 
@@ -26,8 +33,33 @@ class RecyclerViewActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_recycler_view)
 
-        var adapter = CustomAdapter(namabuah, gambarbuah, jmlrating)
-        recyclerview.adapter = adapter
+        var getConfig = RetrofitConfig().service
+        var getRequest = getConfig.request_wisata()
+
+        getRequest.enqueue(object : Callback<ResponseWisata> {
+            override fun onFailure(call: Call<ResponseWisata>?, t: Throwable?) {
+                Log.d("Error server", t?.message)
+            }
+
+            override fun onResponse(call: Call<ResponseWisata>?, response: Response<ResponseWisata>?) {
+//                Log.d("Status server", response?.message())
+//                Log.d("Response json", response?.body().toString())
+
+                //null asserted null atau null exception !!
+                if (response?.isSuccessful!!){
+                    var alljson = response.body()
+                    var jsonSemarang = alljson?.semarang
+
+                    var adapter = CustomAdapter(jsonSemarang, applicationContext)
+                    recyclerview.adapter = adapter
+                }
+
+            }
+        })
+
+
         recyclerview.layoutManager = LinearLayoutManager(this)
     }
 }
+
+
